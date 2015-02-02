@@ -92,50 +92,51 @@ static inline NSRegularExpression * ParenthesisRegularExpression() {
     self.attributedLabel.font = f;
     self.attributedLabel.textColor = [UIColor darkGrayColor];
     self.attributedLabel.lineBreakMode = UILineBreakModeWordWrap;
-    self.attributedLabel.leading = -100;
-    self.attributedLabel.maximumLineHeight = f.lineHeight;
-    self.attributedLabel.minimumLineHeight = f.lineHeight;
+//    self.attributedLabel.leading = -100;
+//    self.attributedLabel.maximumLineHeight = f.lineHeight;
+//    self.attributedLabel.minimumLineHeight = f.lineHeight;
     self.attributedLabel.numberOfLines = 0;
     self.attributedLabel.linkAttributes = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:(NSString *)kCTUnderlineStyleAttributeName];
     
     self.attributedLabel.highlightedTextColor = [UIColor whiteColor];
     self.attributedLabel.shadowColor = [UIColor colorWithWhite:0.87f alpha:1.0f];
     self.attributedLabel.shadowOffset = CGSizeMake(0.0f, 1.0f);
-    self.attributedLabel.verticalAlignment = TTTAttributedLabelVerticalAlignmentTop;
+//    self.attributedLabel.verticalAlignment = TTTAttributedLabelVerticalAlignmentTop;
     
-    [self.attributedLabel setText:self.espressoDescription afterInheritingLabelAttributesAndConfiguringWithBlock:^NSMutableAttributedString *(NSMutableAttributedString *mutableAttributedString) {
-        NSRange stringRange = NSMakeRange(0, [mutableAttributedString length]);
-        
-        NSRegularExpression *regexp = NameRegularExpression();
-        NSRange nameRange = [regexp rangeOfFirstMatchInString:[mutableAttributedString string] options:0 range:stringRange];
-        UIFont *boldSystemFont = [UIFont boldSystemFontOfSize:kEspressoDescriptionTextFontSize]; 
-        CTFontRef boldFont = CTFontCreateWithName((__bridge CFStringRef)boldSystemFont.fontName, boldSystemFont.pointSize, NULL);
-        if (boldFont) {
-            [mutableAttributedString removeAttribute:(NSString *)kCTFontAttributeName range:nameRange];
-            [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(__bridge id)boldFont range:nameRange];
-            CFRelease(boldFont);
-        }
-        
-        [mutableAttributedString replaceCharactersInRange:nameRange withString:[[[mutableAttributedString string] substringWithRange:nameRange] uppercaseString]];
-        
-        regexp = ParenthesisRegularExpression();
-        [regexp enumerateMatchesInString:[mutableAttributedString string] options:0 range:stringRange usingBlock:^(NSTextCheckingResult *result, __unused NSMatchingFlags flags, __unused BOOL * stop) {
-            UIFont *italicSystemFont = [UIFont italicSystemFontOfSize:kEspressoDescriptionTextFontSize];
-            CTFontRef italicFont = CTFontCreateWithName((__bridge CFStringRef)italicSystemFont.fontName, italicSystemFont.pointSize, NULL);
-            if (italicFont) {
-                [mutableAttributedString removeAttribute:(NSString *)kCTFontAttributeName range:result.range];
-                [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(__bridge id)italicFont range:result.range];
-                CFRelease(italicFont);
-                
-                [mutableAttributedString removeAttribute:(NSString *)kCTForegroundColorAttributeName range:result.range];
-                [mutableAttributedString addAttribute:(NSString*)kCTForegroundColorAttributeName value:(id)[[UIColor grayColor] CGColor] range:result.range];
-            }
-        }];
-        
-        return mutableAttributedString;
-    }];
+    NSMutableAttributedString *mutableAttributedString = [[NSMutableAttributedString alloc] initWithString:self.espressoDescription];
+    
+    
+    NSRange stringRange = NSMakeRange(0, [mutableAttributedString length]);
     
     NSRegularExpression *regexp = NameRegularExpression();
+    NSRange nameRange = [regexp rangeOfFirstMatchInString:[mutableAttributedString string] options:0 range:stringRange];
+    UIFont *boldSystemFont = [UIFont boldSystemFontOfSize:kEspressoDescriptionTextFontSize]; 
+    CTFontRef boldFont = CTFontCreateWithName((__bridge CFStringRef)boldSystemFont.fontName, boldSystemFont.pointSize, NULL);
+    if (boldFont) {
+        [mutableAttributedString removeAttribute:NSFontAttributeName range:nameRange];
+        [mutableAttributedString addAttribute:NSFontAttributeName value:(__bridge id)boldFont range:nameRange];
+        CFRelease(boldFont);
+    }
+    
+    [mutableAttributedString replaceCharactersInRange:nameRange withString:[[[mutableAttributedString string] substringWithRange:nameRange] uppercaseString]];
+    
+    regexp = ParenthesisRegularExpression();
+    [regexp enumerateMatchesInString:[mutableAttributedString string] options:0 range:stringRange usingBlock:^(NSTextCheckingResult *result, __unused NSMatchingFlags flags, __unused BOOL * stop) {
+        UIFont *italicSystemFont = [UIFont italicSystemFontOfSize:kEspressoDescriptionTextFontSize];
+        CTFontRef italicFont = CTFontCreateWithName((__bridge CFStringRef)italicSystemFont.fontName, italicSystemFont.pointSize, NULL);
+        if (italicFont) {
+            [mutableAttributedString removeAttribute:NSFontAttributeName range:result.range];
+            [mutableAttributedString addAttribute:NSFontAttributeName value:(__bridge id)italicFont range:result.range];
+            CFRelease(italicFont);
+            
+            [mutableAttributedString removeAttribute:NSForegroundColorAttributeName range:result.range];
+            [mutableAttributedString addAttribute:NSForegroundColorAttributeName value:[UIColor grayColor] range:result.range];
+        }
+    }];
+    
+    self.attributedLabel.attributedText = mutableAttributedString;
+    
+    regexp = NameRegularExpression();
     NSRange linkRange = [regexp rangeOfFirstMatchInString:self.espressoDescription options:0 range:NSMakeRange(0, [self.espressoDescription length])];
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http://en.wikipedia.org/wiki/%@", [self.espressoDescription substringWithRange:linkRange]]];
     [self.attributedLabel addLinkToURL:url withRange:linkRange];

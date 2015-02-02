@@ -71,6 +71,7 @@ heightForRowAtIndexPath:(__unused NSIndexPath *)indexPath
     if (cell == nil) {
         cell = [[AttributedTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     
     NSString *description = [self.espressos objectAtIndex:(NSUInteger)indexPath.row];
